@@ -22,6 +22,7 @@
 - 💾 บันทึก JSON แบบ real-time (ไม่สูญเสียข้อมูลหาก crash)
 - 🔄 ระบบ retry อัตโนมัติ
 - 📊 แสดงสถิติการทำงานแบบ real-time
+- 📄 คำนวณจำนวนหน้าอัตโนมัติด้วย `get-pages`
 
 ## Requirements
 
@@ -120,7 +121,54 @@ npm run cloud
 
 รอจนเห็นข้อความ "Cloud server is running"
 
-### 2. เริ่ม Scraper (Terminal 2)
+### 2. คำนวณจำนวนหน้าอัตโนมัติ (Optional)
+
+ก่อนรัน scraper สามารถใช้คำสั่ง `get-pages` เพื่อคำนวณจำนวนหน้าทั้งหมดและอัปเดต `maxPages` ใน config.json อัตโนมัติ:
+
+```bash
+npm run get-pages
+```
+
+**วิธีการทำงาน:**
+1. อ่านค่า `searchMode` และ `keyword`/`bts_mrt` จาก config.json
+2. เข้าหน้าค้นหางานของ JobThai
+3. กดปุ่ม "ถัดไป" (›) ไปเรื่อยๆ จนกว่าจะไม่มีปุ่มกด
+4. นับจำนวนหน้าทั้งหมดและอัปเดต `maxPages` ใน config.json
+
+**ตัวอย่าง output:**
+```
+📖 Reading config.json...
+   Search Mode: keyword
+   Keyword: ไอที
+   Current maxPages: 0
+
+🔍 Search URL: https://www.jobthai.com/th/jobs?keyword=%E0%B9%84%E0%B8%AD%E0%B8%97%E0%B8%B5
+
+🚀 Connecting to Ulixee Cloud...
+🌐 Navigating to JobThai...
+
+📊 Total jobs found: 220
+📄 Initial pages detected from pagination: 5
+
+🔄 Counting pages by clicking "Next" button...
+   📄 Page 1
+   📄 Page 2
+   ...
+   📄 Page 11
+   ✅ Reached last page (no more "Next" button)
+
+📄 Total pages counted: 11
+
+💾 Updating config.json with maxPages: 11
+
+✅ Config updated successfully!
+==================================================
+   maxPages: 11
+   Total jobs: 220
+==================================================
+```
+
+### 3. เริ่ม Scraper (Terminal 2)
 
 ```bash
 npm run scrape
@@ -193,12 +241,22 @@ nodeJS_pull_scrape/
 │   ├── scraper.js         # Main scraper logic
 │   ├── worker.js          # Parallel worker
 │   ├── queue.js           # Job queue management
+│   ├── get-pages.js       # คำนวณจำนวนหน้าและอัปเดต config
 │   └── utils/
 │       ├── parser.js      # HTML parsing
 │       └── file-handler.js # JSON file operations
 └── output/
     └── jobs.json          # Scraped data
 ```
+
+## NPM Scripts
+
+| Command | Description |
+|---------|-------------|
+| `npm run cloud` | เริ่ม Ulixee Cloud Server |
+| `npm run get-pages` | คำนวณจำนวนหน้าและอัปเดต maxPages ใน config.json |
+| `npm run scrape` | เริ่ม scraper |
+| `npm start` | เหมือน `npm run scrape` |
 
 ## License
 

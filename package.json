@@ -7,7 +7,8 @@
   "scripts": {
     "start": "node src/index.js",
     "cloud": "node src/cloud-server.js",
-    "scrape": "node src/index.js"
+    "scrape": "node src/index.js",
+    "get-pages": "node src/get-pages.js"
   },
   "keywords": [
     "jobthai",
