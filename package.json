@@ -1,0 +1,26 @@
+{
+  "name": "jobthai-scraper",
+  "version": "1.0.0",
+  "description": "JobThai scraper using Ulixee Hero framework with parallel workers",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js",
+    "cloud": "node src/cloud-server.js",
+    "scrape": "node src/index.js"
+  },
+  "keywords": [
+    "jobthai",
+    "scraper",
+    "ulixee",
+    "hero"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@ulixee/cloud": "^2.0.0-alpha.29",
+    "@ulixee/hero": "^2.0.0-alpha.29",
+    "cheerio": "^1.0.0"
+  }
+}
+

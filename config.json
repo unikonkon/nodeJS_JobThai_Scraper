@@ -1,0 +1,15 @@
+{
+  "searchMode": "keyword",
+  "keyword": "ไอที",
+  "bts_mrt": "รถไฟฟ้า-และ-BRT",
+  "workers": 5,
+  "output": "./output/jobs.json",
+  "delay": {
+    "min": 1000,
+    "max": 3000
+  },
+  "cloudHost": "ws://localhost:1818",
+  "maxPages": 1,
+  "retryAttempts": 3
+}
+
