@@ -25,9 +25,12 @@ export class JobThaiScraper {
    * @returns {string} Search URL
    */
   buildSearchUrl() {
-    const { searchMode, keyword, bts_mrt } = this.config;
+    const { searchMode, keyword, bts_mrt, custom_url } = this.config;
     
-    if (searchMode === 'bts_mrt' && bts_mrt) {
+    if (searchMode === 'custom_url' && custom_url) {
+      console.log(`🔍 Custom URL mode: ${custom_url}`);
+      return custom_url;
+    } else if (searchMode === 'bts_mrt' && bts_mrt) {
       console.log(`🔍 BTS/MRT mode: ${bts_mrt}`);
       // BTS/MRT mode - Thai path (will be auto-encoded by browser)
       // URL: https://www.jobthai.com/หางาน/รถไฟฟ้า-และ-BRT

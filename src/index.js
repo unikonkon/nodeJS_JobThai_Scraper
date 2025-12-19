@@ -21,6 +21,7 @@ function loadConfig() {
       searchMode: 'keyword',
       keyword: 'ไอที',
       bts_mrt: 'รถไฟฟ้า-และ-BRT',
+      custom_url: '',
       workers: 3,
       output: './output/jobs.json',
       delay: {
@@ -71,6 +72,8 @@ function printConfig(config) {
     console.log(`   Keyword: ${config.keyword}`);
   } else if (config.searchMode === 'bts_mrt') {
     console.log(`   BTS/MRT: ${config.bts_mrt}`);
+  } else if (config.searchMode === 'custom_url') {
+    console.log(`   Custom URL: ${config.custom_url}`);
   }
   console.log(`   Workers: ${config.workers}`);
   console.log(`   Output: ${config.output}`);

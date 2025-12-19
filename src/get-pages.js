@@ -14,9 +14,11 @@ const configPath = path.join(__dirname, '..', 'config.json');
  * @returns {string} Search URL
  */
 function buildSearchUrl(config) {
-  const { searchMode, keyword, bts_mrt } = config;
+  const { searchMode, keyword, bts_mrt, custom_url } = config;
   
-  if (searchMode === 'bts_mrt' && bts_mrt) {
+  if (searchMode === 'custom_url' && custom_url) {
+    return custom_url;
+  } else if (searchMode === 'bts_mrt' && bts_mrt) {
     return `https://www.jobthai.com/หางาน/${bts_mrt}`;
   } else if (searchMode === 'keyword' && keyword) {
     const encodedKeyword = encodeURIComponent(keyword);
@@ -202,8 +204,13 @@ async function getPages() {
     
     console.log('📖 Reading config.json...');
     console.log(`   Search Mode: ${config.searchMode}`);
-    console.log(`   Keyword: ${config.keyword || '-'}`);
-    console.log(`   BTS/MRT: ${config.bts_mrt || '-'}`);
+    if (config.searchMode === 'keyword') {
+      console.log(`   Keyword: ${config.keyword || '-'}`);
+    } else if (config.searchMode === 'bts_mrt') {
+      console.log(`   BTS/MRT: ${config.bts_mrt || '-'}`);
+    } else if (config.searchMode === 'custom_url') {
+      console.log(`   Custom URL: ${config.custom_url || '-'}`);
+    }
     console.log(`   Current maxPages: ${config.maxPages}`);
     
     const searchUrl = buildSearchUrl(config);

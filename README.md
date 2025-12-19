@@ -45,9 +45,10 @@ npm install
 
 ```json
 {
-  "searchMode": "keyword",      // เลือก "keyword" หรือ "bts_mrt"
+  "searchMode": "keyword",      // เลือก "keyword", "bts_mrt" หรือ "custom_url"
   "keyword": "ไอที",            // ใช้เมื่อ searchMode = "keyword"
   "bts_mrt": "รถไฟฟ้า-และ-BRT", // ใช้เมื่อ searchMode = "bts_mrt"
+  "custom_url": "",             // ใช้เมื่อ searchMode = "custom_url"
   "workers": 3,
   "output": "./output/jobs.json",
   "delay": {
@@ -64,9 +65,10 @@ npm install
 
 | Option | Description |
 |--------|-------------|
-| `searchMode` | โหมดการค้นหา: `"keyword"` หรือ `"bts_mrt"` |
+| `searchMode` | โหมดการค้นหา: `"keyword"`, `"bts_mrt"` หรือ `"custom_url"` |
 | `keyword` | คำค้นหา (ใช้เมื่อ searchMode: "keyword") |
 | `bts_mrt` | ชื่อสายรถไฟฟ้า (ใช้เมื่อ searchMode: "bts_mrt") |
+| `custom_url` | URL ที่กำหนดเอง (ใช้เมื่อ searchMode: "custom_url") |
 | `workers` | จำนวน parallel workers |
 | `output` | path ไฟล์ JSON output |
 | `delay.min/max` | delay ระหว่าง requests (ms) |
@@ -110,6 +112,28 @@ URL ที่ใช้: `https://www.jobthai.com/หางาน/รถไฟฟ
 - `"BTS-สายสุขุมวิท"` - BTS สายสุขุมวิท
 - `"BTS-สายสีลม"` - BTS สายสีลม
 - `"MRT-สายสีน้ำเงิน"` - MRT สายสีน้ำเงิน
+
+#### 3. Custom URL Mode (กำหนด URL เอง)
+
+```json
+{
+  "searchMode": "custom_url",
+  "custom_url": "https://www.jobthai.com/th/jobs?keyword=web&location=bangkok",
+  ...
+}
+```
+
+URL ที่ใช้: ตามที่กำหนดใน `custom_url`
+
+**ประโยชน์:**
+- สามารถกำหนด URL ที่ซับซ้อนได้เอง
+- รองรับ query parameters หลายตัว
+- รองรับ URL ที่สร้างจากหน้าเว็บ JobThai โดยตรง
+
+**ตัวอย่าง custom_url:**
+- `"https://www.jobthai.com/th/jobs?keyword=web&location=bangkok"` - ค้นหางาน web ในกรุงเทพ
+- `"https://www.jobthai.com/th/jobs?keyword=developer&salary_min=30000"` - ค้นหางาน developer เงินเดือนขั้นต่ำ 30,000
+- `"https://www.jobthai.com/หางาน/BTS-สายสุขุมวิท?page=2"` - หน้าที่ 2 ของ BTS สายสุขุมวิท
 
 ## Usage
 
