@@ -58,6 +58,7 @@ npm install
   "keyword": "ไอที",            // ใช้เมื่อ searchMode = "keyword"
   "bts_mrt": "รถไฟฟ้า-และ-BRT", // ใช้เมื่อ searchMode = "bts_mrt"
   "custom_url": "",             // ใช้เมื่อ searchMode = "custom_url"
+  "startPage": 1,               // หน้าเริ่มต้นในการ scrape (default: 1)
   "workers": 3,
   "output": "./output/jobs.json",
   "delay": {
@@ -78,6 +79,7 @@ npm install
 | `keyword` | คำค้นหา (ใช้เมื่อ searchMode: "keyword") |
 | `bts_mrt` | ชื่อสายรถไฟฟ้า (ใช้เมื่อ searchMode: "bts_mrt") |
 | `custom_url` | URL ที่กำหนดเอง (ใช้เมื่อ searchMode: "custom_url") |
+| `startPage` | หน้าเริ่มต้นในการ scrape (default: 1) สามารถกำหนดให้เริ่มจากหน้าที่ต้องการ เช่น 3 จะเริ่ม scrape จากหน้า 3 |
 | `workers` | จำนวน parallel workers |
 | `output` | path ไฟล์ JSON output |
 | `delay.min/max` | delay ระหว่าง requests (ms) |
@@ -143,6 +145,37 @@ URL ที่ใช้: ตามที่กำหนดใน `custom_url`
 - `"https://www.jobthai.com/th/jobs?keyword=web&location=bangkok"` - ค้นหางาน web ในกรุงเทพ
 - `"https://www.jobthai.com/th/jobs?keyword=developer&salary_min=30000"` - ค้นหางาน developer เงินเดือนขั้นต่ำ 30,000
 - `"https://www.jobthai.com/หางาน/BTS-สายสุขุมวิท?page=2"` - หน้าที่ 2 ของ BTS สายสุขุมวิท
+
+#### 4. Start Page (กำหนดหน้าเริ่มต้น)
+
+คุณสามารถกำหนดหน้าเริ่มต้นในการ scrape ได้ 2 วิธี:
+
+**วิธีที่ 1: กำหนดผ่าน `startPage` ใน config.json**
+```json
+{
+  "searchMode": "keyword",
+  "keyword": "web developer",
+  "startPage": 3,
+  "maxPages": 10,
+  "workers": 3
+}
+```
+ระบบจะเริ่ม scrape จากหน้าที่ 3 ไปจนถึงหน้าที่ 10
+
+**วิธีที่ 2: ใส่ parameter `page=` ใน `custom_url`**
+```json
+{
+  "searchMode": "custom_url",
+  "custom_url": "https://www.jobthai.com/th/jobs?jobtype=7&page=3",
+  "maxPages": 10,
+  "workers": 3
+}
+```
+ระบบจะดึงหน้าเริ่มต้นจาก URL parameter โดยอัตโนมัติ (แต่ถ้ามี `startPage` ใน config จะใช้ค่า `startPage` แทน)
+
+**ตัวอย่างการใช้งาน:**
+- เริ่ม scrape จากหน้าที่ 5 ไปจนถึงหน้าที่ 20: ตั้ง `"startPage": 5` และ `"maxPages": 20`
+- ดึงเฉพาะหน้าที่ 3-7: ตั้ง `"startPage": 3` และ `"maxPages": 7`
 
 ## Usage
 

@@ -155,12 +155,48 @@ export class JobThaiScraper {
    * @param {string} startUrl - Initial search URL
    */
   async scrapeJobListings(startUrl) {
-    let currentUrl = startUrl;
+    // Extract page number from URL or config
     let pageNum = 1;
+
+    // Try to extract page number from URL parameter
+    try {
+      const urlObj = new URL(startUrl);
+      const pageParam = urlObj.searchParams.get('page');
+      if (pageParam) {
+        pageNum = parseInt(pageParam, 10);
+      }
+    } catch (e) {
+      // URL parsing failed, use default
+    }
+
+    // Override with config.startPage if specified
+    if (this.config.startPage && this.config.startPage > 0) {
+      pageNum = this.config.startPage;
+    }
+
+    // Build URL with page parameter if needed
+    let currentUrl = startUrl;
+    if (pageNum > 1) {
+      try {
+        const urlObj = new URL(startUrl);
+        urlObj.searchParams.set('page', pageNum);
+        currentUrl = urlObj.toString();
+      } catch (e) {
+        // If URL parsing fails, append page parameter
+        const separator = startUrl.includes('?') ? '&' : '?';
+        currentUrl = `${startUrl}${separator}page=${pageNum}`;
+      }
+    }
+
     const maxPages = this.config.maxPages || 0; // 0 = no limit
     const existingIds = this.fileHandler.getExistingIds();
-    
-    console.log('📄 Scraping job listings from search results...\n');
+
+    console.log('📄 Scraping job listings from search results...');
+    if (pageNum > 1) {
+      console.log(`   Starting from page ${pageNum}\n`);
+    } else {
+      console.log('');
+    }
     
     while (currentUrl) {
       console.log(`📄 Processing page ${pageNum}: ${currentUrl}`);
