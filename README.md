@@ -13,6 +13,15 @@
 
 ทุก worker มี browser environment แยกกัน และจัดการคิวงานแบบ parallel
 
+วิธีรัน
+### 1. เริ่ม Ulixee Cloud Server (Terminal 1)
+npm run cloud
+### 2. คำนวณจำนวนหน้าอัตโนมัติ (Optional) (หรือไม่ต้องใช้ก็ได้ไปกำหนดจำนวนหน้าเองผ่าน maxPages ใน config.json)
+npm run get-pages
+### 3. เริ่ม Scraper (Terminal 2)
+npm run scrape
+
+
 
 
 ## Features

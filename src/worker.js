@@ -98,9 +98,11 @@ export class Worker {
       companyLogo: jobData.companyLogo || '',
       location: jobData.location !== 'ไม่ระบุสถานที่' ? jobData.location : (job.location || 'ไม่ระบุสถานที่'),
       salary: jobData.salary !== 'ไม่ระบุเงินเดือน' ? jobData.salary : (job.salary || 'ไม่ระบุเงินเดือน'),
-      description: jobData.description || '',
-      requirements: jobData.requirements || '',
+      positions: jobData.positions || '',
+      companyHistory: jobData.companyHistory || '',
       benefits: jobData.benefits || '',
+      contact: jobData.contact || '',
+      transportation: jobData.transportation || '',
       jobUrl: job.url,
       postedDate: jobData.postedDate || job.postedDate || '',
       scrapedAt: new Date().toISOString()
@@ -170,18 +172,24 @@ export class Worker {
     ]);
     
     // Get full page text for description extraction
-    let description = '';
-    let requirements = '';
-    let benefits = '';
-    
+    let extractedSections = {
+      company: '',
+      postedDate: '',
+      title: '',
+      location: '',
+      salary: '',
+      positions: '',
+      companyHistory: '',
+      benefits: '',
+      contact: '',
+      transportation: ''
+    };
+
     try {
       const bodyText = await document.body.innerText;
-      
+
       // Extract sections from body text
-      const sections = this.extractSectionsFromText(bodyText);
-      description = sections.description;
-      requirements = sections.requirements;
-      benefits = sections.benefits;
+      extractedSections = this.extractSectionsFromText(bodyText);
     } catch (e) {
       console.log(`⚠️ Worker ${this.id}: Could not extract body text`);
     }
@@ -198,16 +206,18 @@ export class Worker {
     }
     
     return {
-      title: title || 'ไม่ระบุตำแหน่ง',
-      company: company || 'ไม่ระบุบริษัท',
+      title: extractedSections.title || title || 'ไม่ระบุตำแหน่ง',
+      company: extractedSections.company || company || 'ไม่ระบุบริษัท',
       companyLogo: companyLogo,
-      location: location || 'ไม่ระบุสถานที่',
-      salary: salary || 'ไม่ระบุเงินเดือน',
-      description: description,
-      requirements: requirements,
-      benefits: benefits,
+      location: extractedSections.location || location || 'ไม่ระบุสถานที่',
+      salary: extractedSections.salary || salary || 'ไม่ระบุเงินเดือน',
+      positions: extractedSections.positions || '',
+      companyHistory: extractedSections.companyHistory || '',
+      benefits: extractedSections.benefits || '',
+      contact: extractedSections.contact || '',
+      transportation: extractedSections.transportation || '',
       jobUrl: jobUrl,
-      postedDate: '',
+      postedDate: extractedSections.postedDate || '',
       scrapedAt: new Date().toISOString()
     };
   }
@@ -236,81 +246,125 @@ export class Worker {
    * Extract job sections from body text
    */
   extractSectionsFromText(bodyText) {
+
     const sections = {
-      description: '',
-      requirements: '',
-      benefits: ''
+      company: '',
+      postedDate: '',
+      title: '',
+      location: '',
+      salary: '',
+      positions: '',
+      companyHistory: '',
+      benefits: '',
+      contact: '',
+      transportation: ''
     };
-    
-    // Common Thai section headers
-    const descriptionHeaders = ['รายละเอียดงาน', 'ลักษณะงาน', 'หน้าที่และความรับผิดชอบ', 'Job Description'];
-    const requirementHeaders = ['คุณสมบัติ', 'คุณสมบัติผู้สมัคร', 'Qualifications', 'Requirements'];
-    const benefitHeaders = ['สวัสดิการ', 'ผลประโยชน์', 'Benefits', 'Welfare'];
-    
+
     const lines = bodyText.split('\n').map(l => l.trim()).filter(l => l);
-    
-    let currentSection = null;
-    let currentContent = [];
-    
-    for (const line of lines) {
-      // Check if this line is a section header
-      let foundHeader = false;
-      
-      for (const header of descriptionHeaders) {
-        if (line.includes(header)) {
-          if (currentSection && currentContent.length) {
-            sections[currentSection] = currentContent.join('\n');
-          }
-          currentSection = 'description';
-          currentContent = [];
-          foundHeader = true;
+
+    // หาชื่อบริษัท (บริษัท ... จำกัด)
+    for (let i = 0; i < lines.length; i++) {
+      if (lines[i].match(/^บริษัท\s+.+\s+จำกัด$/)) {
+        sections.company = lines[i];
+        break;
+      }
+    }
+
+    // หาวันที่ประกาศ (รูปแบบ: XX ธ.ค. XX)
+    for (let i = 0; i < lines.length; i++) {
+      if (lines[i].match(/^\d{1,2}\s+[ก-ฮ]\.[ก-ฮ]\.\s+\d{2}$/)) {
+        sections.postedDate = lines[i];
+        break;
+      }
+    }
+
+    // หาตำแหน่งงาน (บรรทัดหลังวันที่ประกาศ และไม่ใช่คำว่า "สถานที่ปฏิบัติงาน" หรือ "เงินเดือน")
+    const dateIndex = lines.findIndex(l => l.match(/^\d{1,2}\s+[ก-ฮ]\.[ก-ฮ]\.\s+\d{2}$/));
+    if (dateIndex !== -1 && dateIndex + 1 < lines.length) {
+      const titleCandidate = lines[dateIndex + 1];
+      if (titleCandidate && !titleCandidate.includes('สถานที่') && !titleCandidate.includes('เงินเดือน')) {
+        sections.title = titleCandidate;
+      }
+    }
+
+    // หาสถานที่ปฏิบัติงาน (หลังคำว่า "สถานที่ปฏิบัติงาน")
+    const locationIndex = lines.findIndex(l => l === 'สถานที่ปฏิบัติงาน');
+    if (locationIndex !== -1 && locationIndex + 1 < lines.length) {
+      sections.location = lines[locationIndex + 1];
+    }
+
+    // หาเงินเดือน (หลังคำว่า "เงินเดือน")
+    const salaryIndex = lines.findIndex(l => l === 'เงินเดือน');
+    if (salaryIndex !== -1 && salaryIndex + 1 < lines.length) {
+      sections.salary = lines[salaryIndex + 1];
+    }
+
+    // หาจำนวนเปิดรับ (หลังคำว่า "อัตรา")
+    const positionsIndex = lines.findIndex(l => l === 'อัตรา');
+    if (positionsIndex !== -1 && positionsIndex + 1 < lines.length) {
+      sections.positions = lines[positionsIndex + 1];
+    }
+
+    // หาประวัติบริษัท (หาบรรทัดที่เป็นภาษาอังกฤษและมี website)
+    let companyHistoryLines = [];
+    let foundCompanyHistoryStart = false;
+    for (let i = 0; i < lines.length; i++) {
+      // เริ่มต้นเมื่อเจอชื่อบริษัทภาษาอังกฤษ (มี Co., Ltd.)
+      if (lines[i].match(/Co\.,?\s*Ltd\.?/i)) {
+        foundCompanyHistoryStart = true;
+        companyHistoryLines.push(lines[i]);
+        continue;
+      }
+
+      // หาก found แล้วให้เก็บบรรทัดต่อไปจนกว่าจะเจอ "สวัสดิการ"
+      if (foundCompanyHistoryStart) {
+        if (lines[i] === 'สวัสดิการ') {
           break;
         }
-      }
-      
-      if (!foundHeader) {
-        for (const header of requirementHeaders) {
-          if (line.includes(header)) {
-            if (currentSection && currentContent.length) {
-              sections[currentSection] = currentContent.join('\n');
-            }
-            currentSection = 'requirements';
-            currentContent = [];
-            foundHeader = true;
-            break;
-          }
-        }
-      }
-      
-      if (!foundHeader) {
-        for (const header of benefitHeaders) {
-          if (line.includes(header)) {
-            if (currentSection && currentContent.length) {
-              sections[currentSection] = currentContent.join('\n');
-            }
-            currentSection = 'benefits';
-            currentContent = [];
-            foundHeader = true;
-            break;
-          }
-        }
-      }
-      
-      // Add line to current section
-      if (!foundHeader && currentSection) {
-        // Stop if we hit footer or unrelated content
-        if (line.includes('สมัครงาน') && line.includes('ออนไลน์')) break;
-        if (line.includes('JobThai') && line.includes('โทร')) break;
-        
-        currentContent.push(line);
+        companyHistoryLines.push(lines[i]);
       }
     }
-    
-    // Save last section
-    if (currentSection && currentContent.length) {
-      sections[currentSection] = currentContent.join('\n');
+    sections.companyHistory = companyHistoryLines.join('\n');
+
+    // หาสวัสดิการ (หลังคำว่า "สวัสดิการ")
+    const benefitsIndex = lines.findIndex(l => l === 'สวัสดิการ');
+    if (benefitsIndex !== -1) {
+      let benefitsLines = [];
+      for (let i = benefitsIndex + 1; i < lines.length; i++) {
+        if (lines[i] === 'ติดต่อ') {
+          break;
+        }
+        // เก็บเฉพาะบรรทัดที่ขึ้นต้นด้วยตัวเลข
+        if (lines[i].match(/^\d+\./)) {
+          benefitsLines.push(lines[i]);
+        }
+      }
+      sections.benefits = benefitsLines.join('\n');
     }
-    
+
+    // หาข้อมูลติดต่อ (หลังคำว่า "ติดต่อ")
+    const contactIndex = lines.findIndex(l => l === 'ติดต่อ');
+    if (contactIndex !== -1) {
+      let contactLines = [];
+      for (let i = contactIndex; i < lines.length; i++) {
+        if (lines[i] === 'วิธีการเดินทาง') {
+          break;
+        }
+        contactLines.push(lines[i]);
+      }
+      sections.contact = contactLines.join('\n');
+    }
+
+    // หาวิธีการเดินทาง (หลังคำว่า "วิธีการเดินทาง")
+    const transportIndex = lines.findIndex(l => l === 'วิธีการเดินทาง');
+    if (transportIndex !== -1 && transportIndex + 1 < lines.length) {
+      const transportLine = lines[transportIndex + 1];
+      // เก็บเฉพาะบรรทัดที่มี BTS หรือ MRT
+      if (transportLine.match(/BTS|MRT/)) {
+        sections.transportation = transportLine;
+      }
+    }
+
     return sections;
   }
   
